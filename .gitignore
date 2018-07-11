@@ -1,0 +1,12 @@
+
+//**ignore these folders**//
+/test/
+/model_pcd/
+!/model_pcd/bottle_milktea_model.pcd
+
+
+//**ignore these files**//
+*.out
+
+
+
