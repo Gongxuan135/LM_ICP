@@ -1,12 +1,8 @@
 
-//**ignore these folders**//
+#ignore these folders#
 /test/
 /model_pcd/
-!/model_pcd/bottle_milktea_model.pcd
 
 
-//**ignore these files**//
+#ignore these files#
 *.out
-
-
-
