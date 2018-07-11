@@ -1,0 +1,67 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Compile",
+            "type": "shell",
+            "command": "g++",
+            "args": [    
+                "-g",
+                "LMICP.cpp", 
+
+                "-o", 
+                "LMICP.out",               
+
+                "-I",
+                "/usr/include/pcl-1.8",
+                "-I",
+                "/usr/include/eigen3",
+                "-I",
+                "/usr/include/vtk-5.10",
+                "-I",
+                "/usr/include/flann",           
+
+                "-l",
+                "pcl_registration",
+                "-l",
+                "pcl_visualization",
+                "-l",
+                "pcl_io",
+                "-l",
+                "pcl_common",
+                "-l",
+                "pcl_kdtree",
+                "-l",
+                "pcl_octree",
+                "-l",
+                "pcl_filters",
+                //"-l",
+                //"pcl_recognition",
+                //"-l",
+                //"pcl_segmentation",
+                "-l",
+                "pcl_search",
+                "-l",
+                "pcl_features",
+                
+                "-l",
+                "boost_system",
+                "-l",
+                "vtkRendering",
+                "-l",
+                "vtkFiltering",
+                "-l",
+                "vtkCommon",
+               
+                //"-Wno-deprecated",      
+              
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
+    ]
+}

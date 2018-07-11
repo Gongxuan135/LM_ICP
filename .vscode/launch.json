@@ -1,0 +1,67 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+
+        {
+            "name": "(gdb) Launch",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/LMICP.out",
+            "args": [
+
+                    "./test/20180626141747_faceshoulders.pcd",
+                    "./model_pcd/faceshoulders_model.pcd",
+
+                    "./test/20180626141747_faceshoulders.pcd",
+                    "./model_pcd/bottle_faceshoulders_model.pcd",
+
+                    "./test/20180626141245_box_pencase.pcd",
+                    "./model_pcd/box_pencase_model.pcd",
+
+                    "./test/20180626141409_bottle_milktea.pcd",
+                    "./model_pcd/bottle_milktea_model.pcd",
+
+                    "./test/20180626141823_box_toothpaste_short.pcd",
+                    "./model_pcd/box_toothpaste_short_model.pcd",
+
+                     "./test/20180626141943_box_toothpaste_long.pcd",
+                     "./model_pcd/box_toothpaste_long_model.pcd",
+
+                     "./test/20180626141848_toothpaste.pcd",
+                     "./model_pcd/toothpaste_model.pcd",
+
+                     "./test/20180626141716_box_pejoy.pcd",
+                     "./model_pcd/box_pejoy_model.pcd",
+
+                    "./test/20180626141526_tin.pcd",
+                    "./model_pcd/tin_model.pcd",
+
+                    "./test/20180626141556_box_eggrolls.pcd",
+                    "./model_pcd/box_eggrolls_model.pcd",
+
+                    "./test/20180626141651_box_white.pcd",
+                    "./model_pcd/bottle_white_model.pcd",
+
+                    "./test/20180626141747_faceshoulders.pcd",
+                    "./model_pcd/faceshoulders_model.pcd",
+
+                    ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": true,
+            "MIMode": "gdb",
+           // "preLaunchTask": "Compile", 
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        }
+    ]
+}
