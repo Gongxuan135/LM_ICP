@@ -1,65 +1,65 @@
 #include <boost/make_shared.hpp> 
-//µã/µãÔÆ
+//ç‚¹/ç‚¹äº‘
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_representation.h>
-//pcdÎÄ¼şÊäÈë/Êä³ö
+//pcdæ–‡ä»¶è¾“å…¥/è¾“å‡º
 #include <pcl/io/pcd_io.h>
-//ÂË²¨
+//æ»¤æ³¢
 #include <pcl/filters/voxel_grid.h>
 #include <pcl/filters/filter.h>
-//ÌØÕ÷
+//ç‰¹å¾
 #include <pcl/features/normal_3d.h>
-//Åä×¼
+//é…å‡†
 #include <pcl/registration/icp.h> 
 #include <pcl/registration/icp_nl.h>
 #include <pcl/registration/transforms.h>
-//¿ÉÊÓ»¯
+//å¯è§†åŒ–
 #include <pcl/visualization/pcl_visualizer.h>
 
 #include <pcl/features/moment_of_inertia_estimation.h>
 
-//ÃüÃû¿Õ¼ä
+//å‘½åç©ºé—´
 using pcl::visualization::PointCloudColorHandlerGenericField;
 using pcl::visualization::PointCloudColorHandlerCustom;
 
-//¶¨ÒåÀàĞÍµÄ±ğÃû
+//å®šä¹‰ç±»å‹çš„åˆ«å
 typedef pcl::PointXYZ PointT;
 typedef pcl::PointCloud<PointT> PointCloud;
 typedef pcl::PointNormal PointNormalT;
 typedef pcl::PointCloud<PointNormalT> PointCloudWithNormals;
 
-//È«¾Ö±äÁ¿
-//¿ÉÊÓ»¯¶ÔÏó
+//å…¨å±€å˜é‡
+//å¯è§†åŒ–å¯¹è±¡
 pcl::visualization::PCLVisualizer *p;
-//×óÊÓÇøºÍÓÒÊÓÇø£¬¿ÉÊÓ»¯´°¿Ú·Ö³É×óÓÒÁ½²¿·Ö
+//å·¦è§†åŒºå’Œå³è§†åŒºï¼Œå¯è§†åŒ–çª—å£åˆ†æˆå·¦å³ä¸¤éƒ¨åˆ†
 int vp_1, vp_2;
 
-//¶¨Òå½á¹¹Ìå£¬ÓÃÓÚ´¦ÀíµãÔÆ
+//å®šä¹‰ç»“æ„ä½“ï¼Œç”¨äºå¤„ç†ç‚¹äº‘
 struct PCD
 {
-  PointCloud::Ptr cloud; //µãÔÆÖ¸Õë
-  std::string f_name; //ÎÄ¼şÃû
-    //¹¹Ôìº¯Êı
-  PCD() : cloud (new PointCloud) {}; //³õÊ¼»¯
+  PointCloud::Ptr cloud; //ç‚¹äº‘æŒ‡é’ˆ
+  std::string f_name; //æ–‡ä»¶å
+    //æ„é€ å‡½æ•°
+  PCD() : cloud (new PointCloud) {}; //åˆå§‹åŒ–
 };
 
 
-// ¶¨ÒåĞÂµÄµã±í´ï·½Ê½< x, y, z, curvature > ×ø±ê+ÇúÂÊ
-class MyPointRepresentation : public pcl::PointRepresentation <PointNormalT> //¼Ì³Ğ¹ØÏµ
+// å®šä¹‰æ–°çš„ç‚¹è¡¨è¾¾æ–¹å¼< x, y, z, curvature > åæ ‡+æ›²ç‡
+class MyPointRepresentation : public pcl::PointRepresentation <PointNormalT> //ç»§æ‰¿å…³ç³»
 {
   using pcl::PointRepresentation<PointNormalT>::nr_dimensions_;
 public:
   MyPointRepresentation ()
   {
-    //Ö¸¶¨Î¬Êı
+    //æŒ‡å®šç»´æ•°
     nr_dimensions_ = 4;
   }
 
-  //ÖØÔØº¯ÊıcopyToFloatArray£¬ÒÔ¶¨Òå×Ô¼ºµÄÌØÕ÷ÏòÁ¿
+  //é‡è½½å‡½æ•°copyToFloatArrayï¼Œä»¥å®šä¹‰è‡ªå·±çš„ç‰¹å¾å‘é‡
   virtual void copyToFloatArray (const PointNormalT &p, float * out) const
   {
-    //< x, y, z, curvature > ×ø±êxyzºÍÇúÂÊ
+    //< x, y, z, curvature > åæ ‡xyzå’Œæ›²ç‡
     out[0] = p.x;
     out[1] = p.y;
     out[2] = p.z;
@@ -69,62 +69,62 @@ public:
 
 
 
-//ÔÚ´°¿ÚµÄ×óÊÓÇø£¬¼òµ¥µÄÏÔÊ¾Ô´µãÔÆºÍÄ¿±êµãÔÆ
+//åœ¨çª—å£çš„å·¦è§†åŒºï¼Œç®€å•çš„æ˜¾ç¤ºæºç‚¹äº‘å’Œç›®æ ‡ç‚¹äº‘
 void showCloudsLeft(const PointCloud::Ptr cloud_target, const PointCloud::Ptr cloud_source)
 {
-  p->removePointCloud ("vp1_target"); //¸ù¾İ¸ø¶¨µÄID£¬´ÓÆÁÄ»ÖĞÈ¥³ıÒ»¸öµãÔÆ¡£²ÎÊıÊÇID
+  p->removePointCloud ("vp1_target"); //æ ¹æ®ç»™å®šçš„IDï¼Œä»å±å¹•ä¸­å»é™¤ä¸€ä¸ªç‚¹äº‘ã€‚å‚æ•°æ˜¯ID
   p->removePointCloud ("vp1_source"); //
-  PointCloudColorHandlerCustom<PointT> tgt_h (cloud_target, 0, 255, 0); //Ä¿±êµãÔÆÂÌÉ«
-  PointCloudColorHandlerCustom<PointT> src_h (cloud_source, 255, 0, 0); //Ô´µãÔÆºìÉ«
-  p->addPointCloud (cloud_target, tgt_h, "vp1_target", vp_1); //¼ÓÔØµãÔÆ
+  PointCloudColorHandlerCustom<PointT> tgt_h (cloud_target, 0, 255, 0); //ç›®æ ‡ç‚¹äº‘ç»¿è‰²
+  PointCloudColorHandlerCustom<PointT> src_h (cloud_source, 255, 0, 0); //æºç‚¹äº‘çº¢è‰²
+  p->addPointCloud (cloud_target, tgt_h, "vp1_target", vp_1); //åŠ è½½ç‚¹äº‘
   p->addPointCloud (cloud_source, src_h, "vp1_source", vp_1);
-  PCL_INFO ("Press q to begin the registration.\n"); //ÔÚÃüÁîĞĞÖĞÏÔÊ¾ÌáÊ¾ĞÅÏ¢
+  PCL_INFO ("Press q to begin the registration.\n"); //åœ¨å‘½ä»¤è¡Œä¸­æ˜¾ç¤ºæç¤ºä¿¡æ¯
   p-> spin();
 }
 
 
-//ÔÚ´°¿ÚµÄÓÒÊÓÇø£¬¼òµ¥µÄÏÔÊ¾Ô´µãÔÆºÍÄ¿±êµãÔÆ
+//åœ¨çª—å£çš„å³è§†åŒºï¼Œç®€å•çš„æ˜¾ç¤ºæºç‚¹äº‘å’Œç›®æ ‡ç‚¹äº‘
 void showCloudsRight(const PointCloudWithNormals::Ptr cloud_target, const PointCloudWithNormals::Ptr cloud_source)
 {
-  p->removePointCloud ("source"); //¸ù¾İ¸ø¶¨µÄID£¬´ÓÆÁÄ»ÖĞÈ¥³ıÒ»¸öµãÔÆ¡£²ÎÊıÊÇID
+  p->removePointCloud ("source"); //æ ¹æ®ç»™å®šçš„IDï¼Œä»å±å¹•ä¸­å»é™¤ä¸€ä¸ªç‚¹äº‘ã€‚å‚æ•°æ˜¯ID
   p->removePointCloud ("target");
-  PointCloudColorHandlerGenericField<PointNormalT> tgt_color_handler (cloud_target, "curvature"); //Ä¿±êµãÔÆ²ÊÉ«¾ä±ú
+  PointCloudColorHandlerGenericField<PointNormalT> tgt_color_handler (cloud_target, "curvature"); //ç›®æ ‡ç‚¹äº‘å½©è‰²å¥æŸ„
   if (!tgt_color_handler.isCapable ())
       PCL_WARN ("Cannot create curvature color handler!");
-  PointCloudColorHandlerGenericField<PointNormalT> src_color_handler (cloud_source, "curvature"); //Ô´µãÔÆ²ÊÉ«¾ä±ú
+  PointCloudColorHandlerGenericField<PointNormalT> src_color_handler (cloud_source, "curvature"); //æºç‚¹äº‘å½©è‰²å¥æŸ„
   if (!src_color_handler.isCapable ())
       PCL_WARN ("Cannot create curvature color handler!");
-  p->addPointCloud (cloud_target, tgt_color_handler, "target", vp_2); //¼ÓÔØµãÔÆ
+  p->addPointCloud (cloud_target, tgt_color_handler, "target", vp_2); //åŠ è½½ç‚¹äº‘
   p->addPointCloud (cloud_source, src_color_handler, "source", vp_2);
   p->spinOnce();
 }
 
 
-// ¶ÁÈ¡Ò»ÏµÁĞµÄPCDÎÄ¼ş£¨Ï£ÍûÅä×¼µÄµãÔÆÎÄ¼ş£©
-// ²ÎÊıargc ²ÎÊıµÄÊıÁ¿£¨À´×Ômain()£©
-// ²ÎÊıargv ²ÎÊıµÄÁĞ±í£¨À´×Ômain()£©
-// ²ÎÊımodels µãÔÆÊı¾İ¼¯µÄ½á¹ûÏòÁ¿
+// è¯»å–ä¸€ç³»åˆ—çš„PCDæ–‡ä»¶ï¼ˆå¸Œæœ›é…å‡†çš„ç‚¹äº‘æ–‡ä»¶ï¼‰
+// å‚æ•°argc å‚æ•°çš„æ•°é‡ï¼ˆæ¥è‡ªmain()ï¼‰
+// å‚æ•°argv å‚æ•°çš„åˆ—è¡¨ï¼ˆæ¥è‡ªmain()ï¼‰
+// å‚æ•°models ç‚¹äº‘æ•°æ®é›†çš„ç»“æœå‘é‡
 void loadData (int argc, char **argv, std::vector<PCD, Eigen::aligned_allocator<PCD> > &models)
 {
-  std::string extension (".pcd"); //ÉùÃ÷²¢³õÊ¼»¯stringÀàĞÍ±äÁ¿extension£¬±íÊ¾ÎÄ¼şºó×ºÃû
-  // Í¨¹ı±éÀúÎÄ¼şÃû£¬¶ÁÈ¡pcdÎÄ¼ş
-  for (int i = 1; i < argc; i++) //±éÀúËùÓĞµÄÎÄ¼şÃû£¨ÂÔ¹ı³ÌĞòÃû£©
+  std::string extension (".pcd"); //å£°æ˜å¹¶åˆå§‹åŒ–stringç±»å‹å˜é‡extensionï¼Œè¡¨ç¤ºæ–‡ä»¶åç¼€å
+  // é€šè¿‡éå†æ–‡ä»¶åï¼Œè¯»å–pcdæ–‡ä»¶
+  for (int i = 1; i < argc; i++) //éå†æ‰€æœ‰çš„æ–‡ä»¶åï¼ˆç•¥è¿‡ç¨‹åºåï¼‰
   {
     std::string fname = std::string (argv[i]);
-    if (fname.size () <= extension.size ()) //ÎÄ¼şÃûµÄ³¤¶ÈÊÇ·ñ·ûºÏÒªÇó
+    if (fname.size () <= extension.size ()) //æ–‡ä»¶åçš„é•¿åº¦æ˜¯å¦ç¬¦åˆè¦æ±‚
       continue;
 
-    std::transform (fname.begin (), fname.end (), fname.begin (), (int(*)(int))tolower); //½«Ä³²Ù×÷(Ğ¡Ğ´×ÖÄ¸»¯)Ó¦ÓÃÓÚÖ¸¶¨·¶Î§µÄÃ¿¸öÔªËØ
-    //¼ì²éÎÄ¼şÊÇ·ñÊÇpcdÎÄ¼ş
+    std::transform (fname.begin (), fname.end (), fname.begin (), (int(*)(int))tolower); //å°†æŸæ“ä½œ(å°å†™å­—æ¯åŒ–)åº”ç”¨äºæŒ‡å®šèŒƒå›´çš„æ¯ä¸ªå…ƒç´ 
+    //æ£€æŸ¥æ–‡ä»¶æ˜¯å¦æ˜¯pcdæ–‡ä»¶
     if (fname.compare (fname.size () - extension.size (), extension.size (), extension) == 0)
     {
-      // ¶ÁÈ¡µãÔÆ£¬²¢±£´æµ½models
+      // è¯»å–ç‚¹äº‘ï¼Œå¹¶ä¿å­˜åˆ°models
       PCD m;
       m.f_name = argv[i];
-      pcl::io::loadPCDFile (argv[i], *m.cloud); //¶ÁÈ¡µãÔÆÊı¾İ
-      //È¥³ıµãÔÆÖĞµÄNaNµã£¨xyz¶¼ÊÇNaN£©
-      std::vector<int> indices; //±£´æÈ¥³ıµÄµãµÄË÷Òı
-      pcl::removeNaNFromPointCloud(*m.cloud,*m.cloud, indices); //È¥³ıµãÔÆÖĞµÄNaNµã
+      pcl::io::loadPCDFile (argv[i], *m.cloud); //è¯»å–ç‚¹äº‘æ•°æ®
+      //å»é™¤ç‚¹äº‘ä¸­çš„NaNç‚¹ï¼ˆxyzéƒ½æ˜¯NaNï¼‰
+      std::vector<int> indices; //ä¿å­˜å»é™¤çš„ç‚¹çš„ç´¢å¼•
+      pcl::removeNaNFromPointCloud(*m.cloud,*m.cloud, indices); //å»é™¤ç‚¹äº‘ä¸­çš„NaNç‚¹
       
       models.push_back (m);
     }
@@ -134,7 +134,7 @@ void loadData (int argc, char **argv, std::vector<PCD, Eigen::aligned_allocator<
 void prePairAlign(const PointCloud::Ptr cloud_src,const PointCloud::Ptr cloud_tgt, PointCloud::Ptr transformed_cloud)
 {
 
-//******************************OBB°üÎ§ºĞ¼ÆËã*************************************//
+//******************************OBBåŒ…å›´ç›’è®¡ç®—*************************************//
 	pcl::MomentOfInertiaEstimation <pcl::PointXYZ> feature_extractor;
 	feature_extractor.setInputCloud(cloud_src);
 	feature_extractor.compute();
@@ -159,7 +159,7 @@ void prePairAlign(const PointCloud::Ptr cloud_src,const PointCloud::Ptr cloud_tg
 	feature_extractor.getEigenVectors(major_vector, middle_vector, minor_vector);
 	feature_extractor.getMassCenter(mass_center);
 
-    //***********************************¿ÉÊÓ»¯ÖØĞÄ¡¢°üÎ§ºĞºÍ×ø±êÏµ******************************************//
+    //***********************************å¯è§†åŒ–é‡å¿ƒã€åŒ…å›´ç›’å’Œåæ ‡ç³»******************************************//
 	//boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer(new pcl::visualization::PCLVisualizer("3D Viewer"));
 	// p->setBackgroundColor(0, 0, 0);
 	 p->addCoordinateSystem(0.2);
@@ -222,7 +222,7 @@ void prePairAlign(const PointCloud::Ptr cloud_src,const PointCloud::Ptr cloud_tg
 	p->addLine(pt3, pt7, 1.0, 0.0, 0.0, "12 edge");
 
 
-	//************************************¼ÆËãĞı×ª¾ØÕó***********************************//
+	//************************************è®¡ç®—æ—‹è½¬çŸ©é˜µ***********************************//
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_in(new pcl::PointCloud<pcl::PointXYZ>());
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_out(new pcl::PointCloud<pcl::PointXYZ>());
 
@@ -236,7 +236,7 @@ void prePairAlign(const PointCloud::Ptr cloud_src,const PointCloud::Ptr cloud_tg
 	cloud_out->is_dense = false;
 	cloud_out->resize(cloud_out->width * cloud_out->height);
 
-	//ÊäÈëËÄ¸öµã
+	//è¾“å…¥å››ä¸ªç‚¹
 	cloud_in->points[0].x = 0;
 	cloud_in->points[0].y = 0;
 	cloud_in->points[0].z = 0;
@@ -253,7 +253,7 @@ void prePairAlign(const PointCloud::Ptr cloud_src,const PointCloud::Ptr cloud_tg
 	cloud_in->points[3].y = 0;
 	cloud_in->points[3].z = 1;
 
-	//Ä¿±êËÄ¸öµã
+	//ç›®æ ‡å››ä¸ªç‚¹
 	cloud_out->points[0].x = center.x;
 	cloud_out->points[0].y = center.y;
 	cloud_out->points[0].z = center.z;
@@ -272,11 +272,11 @@ void prePairAlign(const PointCloud::Ptr cloud_src,const PointCloud::Ptr cloud_tg
 
 
 
-	//ÀûÓÃSVD·½·¨Çó½â±ä»»¾ØÕó  
+	//åˆ©ç”¨SVDæ–¹æ³•æ±‚è§£å˜æ¢çŸ©é˜µ  
 	pcl::registration::TransformationEstimationSVD<pcl::PointXYZ, pcl::PointXYZ> TESVD;
 	pcl::registration::TransformationEstimationSVD<pcl::PointXYZ, pcl::PointXYZ>::Matrix4 transformation2;
 	TESVD.estimateRigidTransformation(*cloud_in, *cloud_out, transformation2);
-	//Êä³ö±ä»»¾ØÕóĞÅÏ¢  
+	//è¾“å‡ºå˜æ¢çŸ©é˜µä¿¡æ¯  
 	std::cout << "The Estimated Rotation and translation matrices (using getTransformation function) are : \n" << std::endl;
 	printf("\n");
 	printf("    | %6.3f %6.3f %6.3f | \n", transformation2(0, 0), transformation2(0, 1), transformation2(0, 2));
@@ -295,100 +295,100 @@ void prePairAlign(const PointCloud::Ptr cloud_src,const PointCloud::Ptr cloud_tg
 }
 
 
-//¼òµ¥µØÅä×¼Ò»¶ÔµãÔÆÊı¾İ£¬²¢·µ»Ø½á¹û
-//²ÎÊıcloud_src  Ô´µãÔÆ
-//²ÎÊıcloud_tgt  Ä¿±êµãÔÆ
-//²ÎÊıoutput     Êä³öµãÔÆ
-//²ÎÊıfinal_transform ³É¶Ô±ä»»¾ØÕó
-//²ÎÊıdownsample ÊÇ·ñÏÂ²ÉÑù
+//ç®€å•åœ°é…å‡†ä¸€å¯¹ç‚¹äº‘æ•°æ®ï¼Œå¹¶è¿”å›ç»“æœ
+//å‚æ•°cloud_src  æºç‚¹äº‘
+//å‚æ•°cloud_tgt  ç›®æ ‡ç‚¹äº‘
+//å‚æ•°output     è¾“å‡ºç‚¹äº‘
+//å‚æ•°final_transform æˆå¯¹å˜æ¢çŸ©é˜µ
+//å‚æ•°downsample æ˜¯å¦ä¸‹é‡‡æ ·
 void pairAlign (const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, PointCloud::Ptr output, Eigen::Matrix4f &final_transform, bool downsample = false)
 {
   //
-  //ÎªÁËÒ»ÖÂĞÔºÍËÙ¶È£¬ÏÂ²ÉÑù
+  //ä¸ºäº†ä¸€è‡´æ€§å’Œé€Ÿåº¦ï¼Œä¸‹é‡‡æ ·
   // \note enable this for large datasets
-  PointCloud::Ptr src (new PointCloud); //´´½¨µãÔÆÖ¸Õë
+  PointCloud::Ptr src (new PointCloud); //åˆ›å»ºç‚¹äº‘æŒ‡é’ˆ
   PointCloud::Ptr tgt (new PointCloud);
-  pcl::VoxelGrid<PointT> grid; //VoxelGrid °ÑÒ»¸ö¸ø¶¨µÄµãÔÆ£¬¾Û¼¯ÔÚÒ»¸ö¾Ö²¿µÄ3DÍø¸ñÉÏ,²¢ÏÂ²ÉÑùºÍÂË²¨µãÔÆÊı¾İ
-  if (downsample) //ÏÂ²ÉÑù
+  pcl::VoxelGrid<PointT> grid; //VoxelGrid æŠŠä¸€ä¸ªç»™å®šçš„ç‚¹äº‘ï¼Œèšé›†åœ¨ä¸€ä¸ªå±€éƒ¨çš„3Dç½‘æ ¼ä¸Š,å¹¶ä¸‹é‡‡æ ·å’Œæ»¤æ³¢ç‚¹äº‘æ•°æ®
+  if (downsample) //ä¸‹é‡‡æ ·
   {
-    grid.setLeafSize (0.005, 0.005, 0.005); //ÉèÖÃÌåÔªÍø¸ñµÄÒ¶×Ó´óĞ¡
-        //ÏÂ²ÉÑù Ô´µãÔÆ
-    grid.setInputCloud (cloud_src); //ÉèÖÃÊäÈëµãÔÆ
-    grid.filter (*src); //ÏÂ²ÉÑùºÍÂË²¨£¬²¢´æ´¢ÔÚsrcÖĞ
-        //ÏÂ²ÉÑù Ä¿±êµãÔÆ
+    grid.setLeafSize (0.005, 0.005, 0.005); //è®¾ç½®ä½“å…ƒç½‘æ ¼çš„å¶å­å¤§å°
+        //ä¸‹é‡‡æ · æºç‚¹äº‘
+    grid.setInputCloud (cloud_src); //è®¾ç½®è¾“å…¥ç‚¹äº‘
+    grid.filter (*src); //ä¸‹é‡‡æ ·å’Œæ»¤æ³¢ï¼Œå¹¶å­˜å‚¨åœ¨srcä¸­
+        //ä¸‹é‡‡æ · ç›®æ ‡ç‚¹äº‘
     grid.setInputCloud (cloud_tgt);
     grid.filter (*tgt);
   }
-  else //²»ÏÂ²ÉÑù
+  else //ä¸ä¸‹é‡‡æ ·
   {
-    src = cloud_src; //Ö±½Ó¸´ÖÆ
+    src = cloud_src; //ç›´æ¥å¤åˆ¶
     tgt = cloud_tgt;
   }
 
-  //¼ÆËãÇúÃæµÄ·¨ÏòÁ¿ºÍÇúÂÊ
-  PointCloudWithNormals::Ptr points_with_normals_src (new PointCloudWithNormals); //´´½¨Ô´µãÔÆÖ¸Õë£¨×¢ÒâµãµÄÀàĞÍ°üº¬×ø±êºÍ·¨ÏòÁ¿£©
-  PointCloudWithNormals::Ptr points_with_normals_tgt (new PointCloudWithNormals); //´´½¨Ä¿±êµãÔÆÖ¸Õë£¨×¢ÒâµãµÄÀàĞÍ°üº¬×ø±êºÍ·¨ÏòÁ¿£©
-  pcl::NormalEstimation<PointT, PointNormalT> norm_est; //¸Ã¶ÔÏóÓÃÓÚ¼ÆËã·¨ÏòÁ¿
-  pcl::search::KdTree<pcl::PointXYZ>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZ> ()); //´´½¨kdÊ÷£¬ÓÃÓÚ¼ÆËã·¨ÏòÁ¿µÄËÑË÷·½·¨
-  norm_est.setSearchMethod (tree); //ÉèÖÃËÑË÷·½·¨
-  norm_est.setKSearch (30); //ÉèÖÃ×î½üÁÚµÄÊıÁ¿
-  norm_est.setInputCloud (src); //ÉèÖÃÊäÈëÔÆ
-  norm_est.compute (*points_with_normals_src); //¼ÆËã·¨ÏòÁ¿£¬²¢´æ´¢ÔÚpoints_with_normals_src
-  pcl::copyPointCloud (*src, *points_with_normals_src); //¸´ÖÆµãÔÆ£¨×ø±ê£©µ½points_with_normals_src£¨°üº¬×ø±êºÍ·¨ÏòÁ¿£©
-  norm_est.setInputCloud (tgt); //Õâ3ĞĞ¼ÆËãÄ¿±êµãÔÆµÄ·¨ÏòÁ¿£¬Í¬ÉÏ
+  //è®¡ç®—æ›²é¢çš„æ³•å‘é‡å’Œæ›²ç‡
+  PointCloudWithNormals::Ptr points_with_normals_src (new PointCloudWithNormals); //åˆ›å»ºæºç‚¹äº‘æŒ‡é’ˆï¼ˆæ³¨æ„ç‚¹çš„ç±»å‹åŒ…å«åæ ‡å’Œæ³•å‘é‡ï¼‰
+  PointCloudWithNormals::Ptr points_with_normals_tgt (new PointCloudWithNormals); //åˆ›å»ºç›®æ ‡ç‚¹äº‘æŒ‡é’ˆï¼ˆæ³¨æ„ç‚¹çš„ç±»å‹åŒ…å«åæ ‡å’Œæ³•å‘é‡ï¼‰
+  pcl::NormalEstimation<PointT, PointNormalT> norm_est; //è¯¥å¯¹è±¡ç”¨äºè®¡ç®—æ³•å‘é‡
+  pcl::search::KdTree<pcl::PointXYZ>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZ> ()); //åˆ›å»ºkdæ ‘ï¼Œç”¨äºè®¡ç®—æ³•å‘é‡çš„æœç´¢æ–¹æ³•
+  norm_est.setSearchMethod (tree); //è®¾ç½®æœç´¢æ–¹æ³•
+  norm_est.setKSearch (30); //è®¾ç½®æœ€è¿‘é‚»çš„æ•°é‡
+  norm_est.setInputCloud (src); //è®¾ç½®è¾“å…¥äº‘
+  norm_est.compute (*points_with_normals_src); //è®¡ç®—æ³•å‘é‡ï¼Œå¹¶å­˜å‚¨åœ¨points_with_normals_src
+  pcl::copyPointCloud (*src, *points_with_normals_src); //å¤åˆ¶ç‚¹äº‘ï¼ˆåæ ‡ï¼‰åˆ°points_with_normals_srcï¼ˆåŒ…å«åæ ‡å’Œæ³•å‘é‡ï¼‰
+  norm_est.setInputCloud (tgt); //è¿™3è¡Œè®¡ç®—ç›®æ ‡ç‚¹äº‘çš„æ³•å‘é‡ï¼ŒåŒä¸Š
   norm_est.compute (*points_with_normals_tgt);
   pcl::copyPointCloud (*tgt, *points_with_normals_tgt);
 
-  //´´½¨Ò»¸ö ×Ô¶¨Òåµã±í´ï·½Ê½µÄ ÊµÀı
+  //åˆ›å»ºä¸€ä¸ª è‡ªå®šä¹‰ç‚¹è¡¨è¾¾æ–¹å¼çš„ å®ä¾‹
   MyPointRepresentation point_representation;
-  //¼ÓÈ¨ÇúÂÊÎ¬¶È£¬ÒÔºÍ×ø±êxyz±£³ÖÆ½ºâ
+  //åŠ æƒæ›²ç‡ç»´åº¦ï¼Œä»¥å’Œåæ ‡xyzä¿æŒå¹³è¡¡
   float alpha[4] = {1.0, 1.0, 1.0, 1.0};
-  point_representation.setRescaleValues (alpha); //ÉèÖÃËõ·ÅÖµ£¨ÏòÁ¿»¯µãÊ±Ê¹ÓÃ£©
+  point_representation.setRescaleValues (alpha); //è®¾ç½®ç¼©æ”¾å€¼ï¼ˆå‘é‡åŒ–ç‚¹æ—¶ä½¿ç”¨ï¼‰
 
-  //´´½¨·ÇÏßĞÔICP¶ÔÏó ²¢ÉèÖÃ²ÎÊı
-  pcl::IterativeClosestPointNonLinear<PointNormalT, PointNormalT> reg; //´´½¨·ÇÏßĞÔICP¶ÔÏó£¨ICP±äÌå£¬Ê¹ÓÃLevenberg-Marquardt×îÓÅ»¯£©
-  reg.setTransformationEpsilon (1e-6); //ÉèÖÃÈİĞíµÄ×î´óÎó²î£¨µü´ú×îÓÅ»¯£©
-  //reg.setTransformationEpsilon (0.01); //ÉèÖÃÈİĞíµÄ×î´óÎó²î£¨µü´ú×îÓÅ»¯£©
-  //***** ×¢Òâ£º¸ù¾İ×Ô¼ºÊı¾İ¿âµÄ´óĞ¡µ÷½Ú¸Ã²ÎÊı
-  reg.setMaxCorrespondenceDistance (2);  //ÉèÖÃ¶ÔÓ¦µãÖ®¼äµÄ×î´ó¾àÀë£¨2m£©,ÔÚÅä×¼¹ı³ÌÖĞ£¬ºöÂÔ´óÓÚ¸ÃãĞÖµµÄµã  reg.setPointRepresentation (boost::make_shared<const MyPointRepresentation> (point_representation)); //ÉèÖÃµã±í´ï
-    //ÉèÖÃÔ´µãÔÆºÍÄ¿±êµãÔÆ
-  reg.setInputSource (points_with_normals_src); //°æ±¾²»·ûºÏ£¬Ê¹ÓÃÏÂÃæµÄÓï¾ä
-  //reg.setInputCloud (points_with_normals_src); //ÉèÖÃÊäÈëµãÔÆ£¨´ı±ä»»µÄµãÔÆ£©
-  reg.setInputTarget (points_with_normals_tgt); //ÉèÖÃÄ¿±êµãÔÆ
-  reg.setMaximumIterations (2); //ÉèÖÃÄÚ²¿ÓÅ»¯µÄµü´ú´ÎÊı
+  //åˆ›å»ºéçº¿æ€§ICPå¯¹è±¡ å¹¶è®¾ç½®å‚æ•°
+  pcl::IterativeClosestPointNonLinear<PointNormalT, PointNormalT> reg; //åˆ›å»ºéçº¿æ€§ICPå¯¹è±¡ï¼ˆICPå˜ä½“ï¼Œä½¿ç”¨Levenberg-Marquardtæœ€ä¼˜åŒ–ï¼‰
+  reg.setTransformationEpsilon (1e-6); //è®¾ç½®å®¹è®¸çš„æœ€å¤§è¯¯å·®ï¼ˆè¿­ä»£æœ€ä¼˜åŒ–ï¼‰
+  //reg.setTransformationEpsilon (0.01); //è®¾ç½®å®¹è®¸çš„æœ€å¤§è¯¯å·®ï¼ˆè¿­ä»£æœ€ä¼˜åŒ–ï¼‰
+  //***** æ³¨æ„ï¼šæ ¹æ®è‡ªå·±æ•°æ®åº“çš„å¤§å°è°ƒèŠ‚è¯¥å‚æ•°
+  reg.setMaxCorrespondenceDistance (2);  //è®¾ç½®å¯¹åº”ç‚¹ä¹‹é—´çš„æœ€å¤§è·ç¦»ï¼ˆ2mï¼‰,åœ¨é…å‡†è¿‡ç¨‹ä¸­ï¼Œå¿½ç•¥å¤§äºè¯¥é˜ˆå€¼çš„ç‚¹  reg.setPointRepresentation (boost::make_shared<const MyPointRepresentation> (point_representation)); //è®¾ç½®ç‚¹è¡¨è¾¾
+    //è®¾ç½®æºç‚¹äº‘å’Œç›®æ ‡ç‚¹äº‘
+  reg.setInputSource (points_with_normals_src); //ç‰ˆæœ¬ä¸ç¬¦åˆï¼Œä½¿ç”¨ä¸‹é¢çš„è¯­å¥
+  //reg.setInputCloud (points_with_normals_src); //è®¾ç½®è¾“å…¥ç‚¹äº‘ï¼ˆå¾…å˜æ¢çš„ç‚¹äº‘ï¼‰
+  reg.setInputTarget (points_with_normals_tgt); //è®¾ç½®ç›®æ ‡ç‚¹äº‘
+  reg.setMaximumIterations (2); //è®¾ç½®å†…éƒ¨ä¼˜åŒ–çš„è¿­ä»£æ¬¡æ•°
 
   // Run the same optimization in a loop and visualize the results
   Eigen::Matrix4f Ti = Eigen::Matrix4f::Identity (), prev, targetToSource;
-  PointCloudWithNormals::Ptr reg_result = points_with_normals_src; //ÓÃÓÚ´æ´¢½á¹û£¨×ø±ê+·¨ÏòÁ¿£©
+  PointCloudWithNormals::Ptr reg_result = points_with_normals_src; //ç”¨äºå­˜å‚¨ç»“æœï¼ˆåæ ‡+æ³•å‘é‡ï¼‰
 
-  for (int i = 0; i < 100; ++i) //µü´ú
+  for (int i = 0; i < 100; ++i) //è¿­ä»£
   {
-    PCL_INFO ("Iteration Nr. %d.\n", i); //ÃüÁîĞĞÏÔÊ¾µü´úµÄ´ÎÊı
-    //±£´æµãÔÆ£¬ÓÃÓÚ¿ÉÊÓ»¯
+    PCL_INFO ("Iteration Nr. %d.\n", i); //å‘½ä»¤è¡Œæ˜¾ç¤ºè¿­ä»£çš„æ¬¡æ•°
+    //ä¿å­˜ç‚¹äº‘ï¼Œç”¨äºå¯è§†åŒ–
     points_with_normals_src = reg_result; //
-    //¹À¼Æ
+    //ä¼°è®¡
     reg.setInputSource (points_with_normals_src);
-    //reg.setInputCloud (points_with_normals_src); //ÖØĞÂÉèÖÃÊäÈëµãÔÆ£¨´ı±ä»»µÄµãÔÆ£©£¬ÒòÎª¾­¹ıÉÏÒ»´Îµü´ú£¬ÒÑ¾­·¢Éú±ä»»ÁË
-    reg.align (*reg_result); //¶ÔÆë£¨Åä×¼£©Á½¸öµãÔÆ
+    //reg.setInputCloud (points_with_normals_src); //é‡æ–°è®¾ç½®è¾“å…¥ç‚¹äº‘ï¼ˆå¾…å˜æ¢çš„ç‚¹äº‘ï¼‰ï¼Œå› ä¸ºç»è¿‡ä¸Šä¸€æ¬¡è¿­ä»£ï¼Œå·²ç»å‘ç”Ÿå˜æ¢äº†
+    reg.align (*reg_result); //å¯¹é½ï¼ˆé…å‡†ï¼‰ä¸¤ä¸ªç‚¹äº‘
 
-    Ti = reg.getFinalTransformation () * Ti; //ÀÛ»ı£¨Ã¿´Îµü´úµÄ£©±ä»»¾ØÕó
-        //Èç¹ûÕâ´Î±ä»»ºÍÉÏ´Î±ä»»µÄÎó²î±ÈãĞÖµĞ¡£¬Í¨¹ı¼õĞ¡×î´óµÄ¶ÔÓ¦µã¾àÀëµÄ·½·¨À´½øÒ»²½Ï¸»¯
+    Ti = reg.getFinalTransformation () * Ti; //ç´¯ç§¯ï¼ˆæ¯æ¬¡è¿­ä»£çš„ï¼‰å˜æ¢çŸ©é˜µ
+        //å¦‚æœè¿™æ¬¡å˜æ¢å’Œä¸Šæ¬¡å˜æ¢çš„è¯¯å·®æ¯”é˜ˆå€¼å°ï¼Œé€šè¿‡å‡å°æœ€å¤§çš„å¯¹åº”ç‚¹è·ç¦»çš„æ–¹æ³•æ¥è¿›ä¸€æ­¥ç»†åŒ–
     if (fabs ((reg.getLastIncrementalTransformation () - prev).sum ()) < reg.getTransformationEpsilon ())
-      reg.setMaxCorrespondenceDistance (reg.getMaxCorrespondenceDistance () - 0.001); //¼õĞ¡¶ÔÓ¦µãÖ®¼äµÄ×î´ó¾àÀë£¨ÉÏÃæÉèÖÃ¹ı£©
-    prev = reg.getLastIncrementalTransformation (); //ÉÏÒ»´Î±ä»»µÄÎó²î
-    //ÏÔÊ¾µ±Ç°Åä×¼×´Ì¬£¬ÔÚ´°¿ÚµÄÓÒÊÓÇø£¬¼òµ¥µÄÏÔÊ¾Ô´µãÔÆºÍÄ¿±êµãÔÆ
+      reg.setMaxCorrespondenceDistance (reg.getMaxCorrespondenceDistance () - 0.001); //å‡å°å¯¹åº”ç‚¹ä¹‹é—´çš„æœ€å¤§è·ç¦»ï¼ˆä¸Šé¢è®¾ç½®è¿‡ï¼‰
+    prev = reg.getLastIncrementalTransformation (); //ä¸Šä¸€æ¬¡å˜æ¢çš„è¯¯å·®
+    //æ˜¾ç¤ºå½“å‰é…å‡†çŠ¶æ€ï¼Œåœ¨çª—å£çš„å³è§†åŒºï¼Œç®€å•çš„æ˜¾ç¤ºæºç‚¹äº‘å’Œç›®æ ‡ç‚¹äº‘
     showCloudsRight(points_with_normals_tgt, points_with_normals_src);
 
   }
 
-  targetToSource = Ti.inverse(); //¼ÆËã´ÓÄ¿±êµãÔÆµ½Ô´µãÔÆµÄ±ä»»¾ØÕó
-  pcl::transformPointCloud (*cloud_tgt, *output, targetToSource); //½«Ä¿±êµãÔÆ ±ä»»»Øµ½ Ô´µãÔÆÖ¡
+  targetToSource = Ti.inverse(); //è®¡ç®—ä»ç›®æ ‡ç‚¹äº‘åˆ°æºç‚¹äº‘çš„å˜æ¢çŸ©é˜µ
+  pcl::transformPointCloud (*cloud_tgt, *output, targetToSource); //å°†ç›®æ ‡ç‚¹äº‘ å˜æ¢å›åˆ° æºç‚¹äº‘å¸§
 
-  p->removePointCloud ("source"); //¸ù¾İ¸ø¶¨µÄID£¬´ÓÆÁÄ»ÖĞÈ¥³ıÒ»¸öµãÔÆ¡£²ÎÊıÊÇID
+  p->removePointCloud ("source"); //æ ¹æ®ç»™å®šçš„IDï¼Œä»å±å¹•ä¸­å»é™¤ä¸€ä¸ªç‚¹äº‘ã€‚å‚æ•°æ˜¯ID
   p->removePointCloud ("target");
-  PointCloudColorHandlerCustom<PointT> cloud_tgt_h (output, 0, 255, 0); //ÉèÖÃµãÔÆÏÔÊ¾ÑÕÉ«£¬ÏÂÍ¬
+  PointCloudColorHandlerCustom<PointT> cloud_tgt_h (output, 0, 255, 0); //è®¾ç½®ç‚¹äº‘æ˜¾ç¤ºé¢œè‰²ï¼Œä¸‹åŒ
   PointCloudColorHandlerCustom<PointT> cloud_src_h (cloud_src, 255, 0, 0);
-  p->addPointCloud (output, cloud_tgt_h, "target", vp_2); //Ìí¼ÓµãÔÆÊı¾İ£¬ÏÂÍ¬
+  p->addPointCloud (output, cloud_tgt_h, "target", vp_2); //æ·»åŠ ç‚¹äº‘æ•°æ®ï¼Œä¸‹åŒ
   p->addPointCloud (cloud_src, cloud_src_h, "source", vp_2);
 
     PCL_INFO ("Press q to continue the registration.\n");
@@ -397,78 +397,78 @@ void pairAlign (const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt
   p->removePointCloud ("source"); 
   p->removePointCloud ("target");
 
-  p->removePointCloud ("sample cloud"); //¸ù¾İ¸ø¶¨µÄID£¬´ÓÆÁÄ»ÖĞÈ¥³ıÒ»¸öµãÔÆ¡£²ÎÊıÊÇID
+  p->removePointCloud ("sample cloud"); //æ ¹æ®ç»™å®šçš„IDï¼Œä»å±å¹•ä¸­å»é™¤ä¸€ä¸ªç‚¹äº‘ã€‚å‚æ•°æ˜¯ID
   p->removeAllShapes();
 
 
   //add the source to the transformed target
-  *output += *cloud_src; // Æ´½ÓµãÔÆÍ¼£¨µÄµã£©µãÊıÊıÄ¿ÊÇÁ½¸öµãÔÆµÄµãÊıºÍ
+  *output += *cloud_src; // æ‹¼æ¥ç‚¹äº‘å›¾ï¼ˆçš„ç‚¹ï¼‰ç‚¹æ•°æ•°ç›®æ˜¯ä¸¤ä¸ªç‚¹äº‘çš„ç‚¹æ•°å’Œ
 
-  final_transform = targetToSource; //×îÖÕµÄ±ä»»¡£Ä¿±êµãÔÆµ½Ô´µãÔÆµÄ±ä»»¾ØÕó
+  final_transform = targetToSource; //æœ€ç»ˆçš„å˜æ¢ã€‚ç›®æ ‡ç‚¹äº‘åˆ°æºç‚¹äº‘çš„å˜æ¢çŸ©é˜µ
  }
 
 
- //****************  Èë¿Úº¯Êı  ************************
+ //****************  å…¥å£å‡½æ•°  ************************
 
-//Ö÷º¯Êı
+//ä¸»å‡½æ•°
 int main (int argc, char** argv)
 {
-  //¶ÁÈ¡Êı¾İ
-  std::vector<PCD, Eigen::aligned_allocator<PCD> > data; //Ä£ĞÍ
-  loadData (argc, argv, data); //¶ÁÈ¡pcdÎÄ¼şÊı¾İ£¬¶¨Òå¼ûÉÏÃæ
+  //è¯»å–æ•°æ®
+  std::vector<PCD, Eigen::aligned_allocator<PCD> > data; //æ¨¡å‹
+  loadData (argc, argv, data); //è¯»å–pcdæ–‡ä»¶æ•°æ®ï¼Œå®šä¹‰è§ä¸Šé¢
 
-  //¼ì²éÓÃ»§Êı¾İe
+  //æ£€æŸ¥ç”¨æˆ·æ•°æ®e
   if (data.empty ())
   {
-    PCL_ERROR ("Syntax is: %s <source.pcd> <target.pcd> [*]", argv[0]); //Óï·¨
-    PCL_ERROR ("[*] - multiple files can be added. The registration results of (i, i+1) will be registered against (i+2), etc"); //¿ÉÒÔÊ¹ÓÃ¶à¸öÎÄ¼ş
+    PCL_ERROR ("Syntax is: %s <source.pcd> <target.pcd> [*]", argv[0]); //è¯­æ³•
+    PCL_ERROR ("[*] - multiple files can be added. The registration results of (i, i+1) will be registered against (i+2), etc"); //å¯ä»¥ä½¿ç”¨å¤šä¸ªæ–‡ä»¶
     return (-1);
   }
-  PCL_INFO ("Loaded %d datasets.", (int)data.size ()); //ÏÔÊ¾¶ÁÈ¡ÁË¶àÉÙ¸öµãÔÆÎÄ¼ş
+  PCL_INFO ("Loaded %d datasets.", (int)data.size ()); //æ˜¾ç¤ºè¯»å–äº†å¤šå°‘ä¸ªç‚¹äº‘æ–‡ä»¶
 
-  //´´½¨Ò»¸ö PCLVisualizer ¶ÔÏó
-    p = new pcl::visualization::PCLVisualizer (argc, argv, "Pairwise Incremental Registration example"); //pÊÇÈ«¾Ö±äÁ¿
-  p->createViewPort (0.0, 0, 0.5, 1.0, vp_1); //´´½¨×óÊÓÇø
-  p->createViewPort (0.5, 0, 1.0, 1.0, vp_2); //´´½¨ÓÒÊÓÇø
+  //åˆ›å»ºä¸€ä¸ª PCLVisualizer å¯¹è±¡
+    p = new pcl::visualization::PCLVisualizer (argc, argv, "Pairwise Incremental Registration example"); //pæ˜¯å…¨å±€å˜é‡
+  p->createViewPort (0.0, 0, 0.5, 1.0, vp_1); //åˆ›å»ºå·¦è§†åŒº
+  p->createViewPort (0.5, 0, 1.0, 1.0, vp_2); //åˆ›å»ºå³è§†åŒº
 
-    //´´½¨µãÔÆÖ¸ÕëºÍ±ä»»¾ØÕó
-    PointCloud::Ptr result (new PointCloud), source, pretarget(new PointCloud), target; //´´½¨3¸öµãÔÆÖ¸Õë£¬·Ö±ğÓÃÓÚ½á¹û£¬Ô´µãÔÆºÍÄ¿±êµãÔÆ
-  //È«¾Ö±ä»»¾ØÕó£¬µ¥Î»¾ØÕó£¬³É¶Ô±ä»»
-    //¶ººÅ±í´ïÊ½£¬ÏÈ´´½¨Ò»¸öµ¥Î»¾ØÕó£¬È»ºó½«³É¶Ô±ä»» ¸³¸ø È«¾Ö±ä»»
+    //åˆ›å»ºç‚¹äº‘æŒ‡é’ˆå’Œå˜æ¢çŸ©é˜µ
+    PointCloud::Ptr result (new PointCloud), source, pretarget(new PointCloud), target; //åˆ›å»º3ä¸ªç‚¹äº‘æŒ‡é’ˆï¼Œåˆ†åˆ«ç”¨äºç»“æœï¼Œæºç‚¹äº‘å’Œç›®æ ‡ç‚¹äº‘
+  //å…¨å±€å˜æ¢çŸ©é˜µï¼Œå•ä½çŸ©é˜µï¼Œæˆå¯¹å˜æ¢
+    //é€—å·è¡¨è¾¾å¼ï¼Œå…ˆåˆ›å»ºä¸€ä¸ªå•ä½çŸ©é˜µï¼Œç„¶åå°†æˆå¯¹å˜æ¢ èµ‹ç»™ å…¨å±€å˜æ¢
     Eigen::Matrix4f GlobalTransform = Eigen::Matrix4f::Identity (), pairTransform; 
 
 
-    //±éÀúËùÓĞµÄµãÔÆÎÄ¼ş
+    //éå†æ‰€æœ‰çš„ç‚¹äº‘æ–‡ä»¶
   for (size_t i = 1; i < data.size (); ++i, ++i)
   {
-    source = data[i-1].cloud; //Ô´µãÔÆ
-    target = data[i].cloud; //Ä¿±êµãÔÆ
-    showCloudsLeft(source, target); //ÔÚ×óÊÓÇø£¬¼òµ¥µÄÏÔÊ¾Ô´µãÔÆºÍÄ¿±êµãÔÆ
-    PointCloud::Ptr temp (new PointCloud); //´´½¨ÁÙÊ±µãÔÆÖ¸Õë
-        //ÏÔÊ¾ÕıÔÚÅä×¼µÄµãÔÆÎÄ¼şÃûºÍ¸÷×ÔµÄµãÊı
+    source = data[i-1].cloud; //æºç‚¹äº‘
+    target = data[i].cloud; //ç›®æ ‡ç‚¹äº‘
+    showCloudsLeft(source, target); //åœ¨å·¦è§†åŒºï¼Œç®€å•çš„æ˜¾ç¤ºæºç‚¹äº‘å’Œç›®æ ‡ç‚¹äº‘
+    PointCloud::Ptr temp (new PointCloud); //åˆ›å»ºä¸´æ—¶ç‚¹äº‘æŒ‡é’ˆ
+        //æ˜¾ç¤ºæ­£åœ¨é…å‡†çš„ç‚¹äº‘æ–‡ä»¶åå’Œå„è‡ªçš„ç‚¹æ•°
     PCL_INFO ("Aligning %s (%d points) with %s (%d points).\n", data[i-1].f_name.c_str (), source->points.size (), data[i].f_name.c_str (), target->points.size ());
 
-    if(i < 14) //Ã»ÓĞ´ÖÅä
+    if(i < 14) //æ²¡æœ‰ç²—é…
     {
        pairAlign (source, target, temp, pairTransform, true);
     }
     
-    else  //ÓĞ´ÖÅäµÄÇé¿ö
+    else  //æœ‰ç²—é…çš„æƒ…å†µ
     {
     prePairAlign(source, target, pretarget);
     pairAlign (source, pretarget, temp, pairTransform, true);
     }
 
-    //½«µ±Ç°µÄÒ»¶ÔµãÔÆÊı¾İ£¬±ä»»µ½È«¾Ö±ä»»ÖĞ¡£
+    //å°†å½“å‰çš„ä¸€å¯¹ç‚¹äº‘æ•°æ®ï¼Œå˜æ¢åˆ°å…¨å±€å˜æ¢ä¸­ã€‚
     pcl::transformPointCloud (*temp, *result, GlobalTransform);
-    //¸üĞÂÈ«¾Ö±ä»»
+    //æ›´æ–°å…¨å±€å˜æ¢
     GlobalTransform = GlobalTransform * pairTransform;
         //********************************************************
 
-        // ±£´æ³É¶ÔµÄÅä×¼½á¹û£¬±ä»»µ½µÚÒ»¸öµãÔÆÖ¡
-    // std::stringstream ss; //ÕâÁ½¾äÊÇÉú³ÉÎÄ¼şÃû
+        // ä¿å­˜æˆå¯¹çš„é…å‡†ç»“æœï¼Œå˜æ¢åˆ°ç¬¬ä¸€ä¸ªç‚¹äº‘å¸§
+    // std::stringstream ss; //è¿™ä¸¤å¥æ˜¯ç”Ÿæˆæ–‡ä»¶å
     // ss << i << ".pcd";
-    // pcl::io::savePCDFile (ss.str (), *result, true); //±£´æ³É¶ÔµÄÅä×¼½á¹û
+    // pcl::io::savePCDFile (ss.str (), *result, true); //ä¿å­˜æˆå¯¹çš„é…å‡†ç»“æœ
 
   }
 }
